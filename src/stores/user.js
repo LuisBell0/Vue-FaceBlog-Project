@@ -3,8 +3,8 @@ import axios from 'axios'
 
 export default defineStore("userStore", {
   state: () => ({
-    isLoggedIn: false,
-    accessToken: null,
+    isLoggedIn: Boolean(localStorage.getItem("accessToken")),
+    accessToken: localStorage.getItem("accessToken") || null,
     refreshToken: null,
   }),
   actions: {

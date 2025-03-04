@@ -79,11 +79,17 @@ const login = async (values) => {
 
   try {
     await store.login(values)
-    await router.push('/')
+    await router.push({name: 'home'})
   } catch (error) {
     login_in_submission.value = false
     login_alert_variant.value = 'bg-red-500'
-    login_alert_message.value = 'Something went wrong, try again later.'
+    console.log(error)
+    if(error.request.status === 401) {
+      login_alert_message.value = 'The login information you entered is incorrect, please try again.'
+    }
+    else {
+      login_alert_message.value = 'Something went wrong, try again later.'
+    }
   }
 }
 </script>

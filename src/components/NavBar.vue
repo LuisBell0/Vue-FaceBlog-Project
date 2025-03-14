@@ -28,7 +28,7 @@
       <div class="hidden lg:flex space-x-4 items-center">
         <RouterLink to="#" draggable="false" class="flex items-center space-x-2">
           <img src="" class="w-7 h-7 rounded-full" alt="Profile Picture">
-          <span>Username</span>
+          <span>{{user.username}}</span>
         </RouterLink>
         <RouterLink to="/login/" draggable="false" class="text-green-600 flex items-center space-x-1">
           <bell-icon class="w-6 h-6"/>
@@ -54,6 +54,7 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter();
 const store = useUserStore();
+const user = store.user;
 const logout = () => {
   store.logout();
   router.push({name: 'login'});

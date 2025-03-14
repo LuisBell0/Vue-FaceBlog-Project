@@ -3,51 +3,46 @@ import axios from 'axios'
 
 export default defineStore("userStore", {
   state: () => ({
-    isLoggedIn: Boolean(localStorage.getItem("accessToken")),
-    accessToken: localStorage.getItem("accessToken") || null,
-    refreshToken: null,
+    isLoggedIn: false,
+    user: null,
   }),
   actions: {
-    async login(values) {
-      const response = await axios.post(
-        '/api/v1/jwt/create/',
-        {
-          username: values.username,
-          password: values.password,
-        },
-        {
-          headers: {'Content-Type': 'application/json'},
-        }
-      )
-      this.accessToken = response.data.access;
-      this.refreshToken = response.data.refresh;
-      this.isLoggedIn = true;
-      localStorage.setItem("accessToken", this.accessToken);
-      localStorage.setItem("refreshToken", this.refreshToken);
+    async fetchUser() {
+      const response = await axios.get('/api/v1/users/me/');
+      this.user = response.data;
     },
-    logout() {
-      this.isLoggedIn = false;
-      this.accessToken = null;
-      this.refreshToken = null;
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-    },
-    async refreshToken() {
+    async checkAuth() {
       try {
-        if (this.refreshToken) return;
-        const response = await axios.post(
-          '/api/v1/jwt/refresh',
-          {
-            refresh: this.refreshToken,
+        await this.fetchUser();
+        return true;
+      } catch (error) {
+        if (error.response && error.response.status === 401) {
+          // Try refreshing token if unauthorized
+          try {
+            await axios.post('/api/v1/token/refresh/');
+            return this.checkAuth(); // Retry auth check
+          } catch (refreshError) {
+            console.warn("Token refresh failed", refreshError);
           }
-        )
-        this.accessToken = response.data.access;
-        localStorage.setItem("accessToken", this.accessToken);
+        }
+        return false;
       }
-      catch (error) {
-        console.log("Token Refresh Failed", error);
-        this.logout();
+    },
+    async login(values) {
+      await axios.post('/api/v1/token/create/', {
+        username: values.username,
+        password: values.password,
+      });
+    },
+    async logout() {
+      try {
+        await axios.post('/api/v1/logout/');
+      } catch (error) {
+        console.warn("Logout failed");
+      } finally {
+        this.user = null;
+        this.isLoggedIn = false;
       }
-    }
+    },
   }
 })

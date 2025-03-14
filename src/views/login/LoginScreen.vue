@@ -18,6 +18,8 @@
               name="username"
               class="w-full p-2 border rounded-md"
               placeholder="Username or Email"
+              :class="submissionClass"
+              :disabled="login_in_submission"
             />
             <error-message name="username" class="text-red-600"></error-message>
           </div>
@@ -26,7 +28,9 @@
               name="password"
               type="password"
               class="w-full p-2 border rounded-md"
+              :class="submissionClass"
               placeholder="Password"
+              :disabled="login_in_submission"
             />
             <error-message name="password" class="text-red-600"></error-message>
           </div>
@@ -53,22 +57,27 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import useUserStore from '@/stores/user.js'
 import { useRouter } from 'vue-router'
 import { Form, Field, ErrorMessage } from 'vee-validate'
 
-const router = useRouter()
-const store = useUserStore()
+const router = useRouter();
+const store = useUserStore();
 
-let login_in_submission = ref(false)
-let login_show_alert = ref(false)
-let login_alert_variant = ref('bg-blue-500')
-let login_alert_message = ref('Your credentials are being submitted...')
+let login_in_submission = ref(false);
+let login_show_alert = ref(false);
+let login_alert_variant = ref('bg-blue-500');
+let login_alert_message = ref('Your credentials are being submitted...');
+let in_submission_class = ref('bg-gray-200');
+
+const submissionClass = computed(() =>
+  login_in_submission.value ? in_submission_class.value : ''
+);
 
 const schema = {
-  username: 'min:3|max:100',
-  password: 'min:8|max:50',
+  username: 'min:3|max:100|required',
+  password: 'min:8|max:50|required',
 }
 
 const login = async (values) => {
@@ -83,7 +92,6 @@ const login = async (values) => {
   } catch (error) {
     login_in_submission.value = false
     login_alert_variant.value = 'bg-red-500'
-    console.log(error)
     if(error.request.status === 401) {
       login_alert_message.value = 'The login information you entered is incorrect, please try again.'
     }

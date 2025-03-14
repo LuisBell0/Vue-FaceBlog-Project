@@ -1,18 +1,20 @@
 import { configure, defineRule } from 'vee-validate'
-import { max, min } from '@vee-validate/rules'
+import { max, min, required } from '@vee-validate/rules'
 
 export default {
   install(app) {
     defineRule('min', min)
     defineRule('max', max)
+    defineRule('required', required)
 
     configure({
       generateMessage: (context) => {
         const messages = {
-          min: `The field ${context.field} is too short.`,
-          max: `The field ${context.field} is too long.`,
+          min: `The ${context.field} field is too short.`,
+          max: `The ${context.field} field is too long.`,
+          required: `The ${context.field} is required`,
         }
-        const message = messages[context.rule.name] ? messages[context.rule.name] : `The field ${context.field} is invalid.`
+        const message = messages[context.rule.name] ? messages[context.rule.name] : `The ${context.field} field is invalid.`
 
         return message;
       },
